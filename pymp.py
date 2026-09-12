@@ -58,6 +58,23 @@ def download_youtube_mp3(youtube_url, output_path):
     except subprocess.CalledProcessError as e:
         print(f"An error occurred: {e}")
 
+def download_youtube_mp3_album(youtube_url, output_dir='.'):
+    output_template = os.path.join(output_dir, "%(playlist_index&{} - |)s%(title)s.%(ext)s")
+
+    try:
+        yt_dlp_cmd = 'yt-dlp.exe' if os.name == 'nt' else 'yt-dlp'
+        subprocess.run([
+            yt_dlp_cmd,
+            '-x', '--audio-format', 'mp3',
+            '--yes-playlist', '-o', output_template,
+            youtube_url
+        ], check=True)
+        print(f"Audio downloaded and saved as {output_template}")
+        input("Press Enter to continue...")
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+
 def download_youtube_mp3_partial(youtube_url, output_path, start_time, end_time):
     """
     Download only a section as MP3 using yt-dlp's --download-sections and extract audio.
@@ -284,21 +301,38 @@ if choice == '1':
     mp3download_choice = input("Which option would you like to choose(1/2)?: ")
     if mp3download_choice.lower() == "back":
         os.execv(sys.executable, [sys.executable] + sys.argv)
+
     if mp3download_choice == '1':
+        album_or_single = input("Are you downloading an album or a single?: ")
+        if album_or_single.lower() == "album":
+            playlist = True
+        else: 
+            playlist = False
+
         youtube_url = input("Enter the YouTube URL: ")
 
         if youtube_url.lower() == "back":
             os.execv(sys.executable, [sys.executable] + sys.argv)
-
-        output_path = input("Enter the output file path (include the name of the file): ")
-
-        if output_path == "":
-            output_path = "~/Downloads/audio"
-
-        if output_path.lower() == "back":
-            os.execv(sys.executable, [sys.executable] + sys.argv)
-
-        download_youtube_mp3(youtube_url, output_path + ".mp3")
+        if playlist == 1:
+            output_template = input("Enter the output file path (include the name of the file): ")
+        else:
+            output_path = input("Enter the output file path (include the name of the file): ")
+        if playlist == 1:
+            if output_template == "":
+                output_template = "~/Downloads/audio"
+        else:
+            if output_path == "":
+                output_path = "~/Downloads/audio"
+        if playlist == 0:
+            if output_path.lower() == "back":
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+        else:
+            if output_template.lower() == "back":
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+        if playlist == 1:
+            download_youtube_mp3_album(youtube_url, output_template)
+        else:
+            download_youtube_mp3(youtube_url, output_path + ".mp3")
 
     if mp3download_choice == '2':
         youtube_url = input("Enter the YouTube URL: ")
