@@ -5,7 +5,7 @@ import os
 import sys
 import shutil
 
-__version__ = "v2.0"
+__version__ = "v2.1"
 
 
 def get_latest_release_tag():
